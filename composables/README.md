@@ -4,18 +4,18 @@
 
 ## 목차
 
-1. [Mixins & Composables](#Mixins-&-Composables)
+1. [Mixins & Composables](#Mixins--Composables)
    1. [Mixins](#mixins)
-   2. [What is a "Composable"?](#What-is-a-"Composable"?)
+   2. [What is a "Composable"?](#What-is-a-Composable)
    3. [Mouse Tracker Example](#Mouse-Tracker-Example)
-   4. [Async State Example](#Async State Example)
-   5. [No Reactivity](#No Reactivity)
-   6. [Conventions and Best Practices](#Conventions and Best Practices)
+   4. [Async State Example](#Async-State-Example)
+   5. [No Reactivity](#No-Reactivity)
+   6. [Conventions and Best Practices](#Conventions-and-Best-Practices)
       1. [Naming](#Naming)
-      2. [Input Arguments](#Input Arguments)
-      3. [Return Values](#Return Values)
-   7. [Extracting Composables for Code Organization](#Extracting Composables for Code Organization)
-   8. [Using Composables in Options API](#Using Composables in Options API)
+      2. [Input Arguments](#Input-Arguments)
+      3. [Return Values](#Return-Values)
+   7. [Extracting Composables for Code Organization](#Extracting-Composables-for-Code-Organization)
+   8. [Using Composables in Options API](#Using-Composables-in-Options-API)
 
 ---
 
@@ -131,6 +131,8 @@ somewhere.vue
 ```
 
 이처럼 개별적으로 사용할 함수를 import 해줘야 하는 불편함이 있고, 함수를 개별적으로 export 해줘야 하는 불편함에도 불구하고 Composables를 사용해야 하는 이유는 무엇일까? 이 이유를 알아보자.
+
+---
 
 ### What is a "Composable"?
 
