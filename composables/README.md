@@ -6,8 +6,8 @@
 
 1. [Mixins & Composables](#Mixins-&-Composables)
    1. [Mixins](#mixins)
-   2. [What is a "Composable"?](#What is a "Composable"?)
-   3. [Mouse Tracker Example](#Mouse Tracker Example)
+   2. [What is a "Composable"?](#What-is-a-"Composable"?)
+   3. [Mouse Tracker Example](#Mouse-Tracker-Example)
    4. [Async State Example](#Async State Example)
    5. [No Reactivity](#No Reactivity)
    6. [Conventions and Best Practices](#Conventions and Best Practices)
