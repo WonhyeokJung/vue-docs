@@ -599,3 +599,6 @@ export default {
 }
 ```
 
+---
+
+[^1]: 출처 https://vuejs.org/guide/reusability/composables.html#async-state-example

@@ -1509,6 +1509,17 @@ export default {
 }
 ```
 
+---
+
+##### Comparison with Other Techniques
+
+**vs. Mixins**
+
+Vue 2 사용자는 아마도 재사용 가능한 유닛 안에서  컴포넌트 논리를 추출하는 mixins 옵션과 친숙할 것이다. mixins에는 3가지의 주요한 문제점이 있다.
+
+1. **불분명한 속성의 출처**: 많은 mixins를 사용할 때, 어떤 인스턴스 프로퍼티가 어느 mixin에서 주입되었는 지 불분명해지며, 컴포넌트의 실행과정을 추적하고 이해하는 것을 어렵게 만든다. 이것이 Composables에서 refs와 구조분해 패턴의 사용을 추천하는 이유기도 하다. refs와 구조분해 패턴은 컴포넌트 내의 프로퍼티 출처를 명확하게 한다.
+2. **이름공간 충돌(Namespace collisions)**: 
+
 ## Reactivity
 
 reactive
