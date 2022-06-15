@@ -11,7 +11,7 @@
         URL : {{ url }}
       </div>
     </div>
-    <div v-if="data">
+    <div v-if="data" style="display: flex; flex-wrap:wrap; justify-content:center;">
       <div v-for="(v, i) in data" :key="i">
         <img :src="v.download_url" alt="..." style="width: 500px; height: 375px;">
       </div>

@@ -487,8 +487,8 @@ Vue의 Render Function은 `h()`함수를 이용해 사용할 수 있다. `h()`�
 기본적인 구조는 아래와 같다.
 
 ```javascript
-function h(Tag, { ...Props }, [ ...Children ]) {
-  return `<${Tag} ${...Props}>${Children}</${Tag}>`
+function h(Type(타입, 태그), { ...Props(프로퍼티, 태그 속성) }, [ ...Children(자식, 자식 태그) ]) {
+  return `<${Type} ${...Props}>${Children}</${Tag}>`
 }
 ```
 
@@ -536,7 +536,15 @@ result
 </div>
 ```
 
+Vnode는 기본적으로 이와 같은 형태를 반환한다.
 
+```javascript
+const vnode = h('div', { id: 'foo' }, [])
+vnode.type // 'div'
+vnode.props // { id: 'foo' }
+vnode.children // []
+vnode.key // null
+```
 
 #### Declaring Render Functions
 
@@ -798,6 +806,8 @@ Vue
 <script>
 export default {
   name: 'FooView'
+  ...
+}
 </script>
 ```
 
@@ -837,8 +847,6 @@ export default {
 }
 ```
 
-
-
 #### Passing Slots
 
 컴포넌트에 자식 요소/컴포넌트를 전달하는 것은 요소(element)에 자식 요소/컴포넌트를 전달하는 것과 조금 다르게 동작한다. Array가 아닌 slot 함수 혹은 slot 함수들의 객체를 전달해야 한다. Slot functions은 일반적인 렌더 함수가 반환할 수 있는 모든 것을 반환할 수 있다. 
@@ -857,13 +865,205 @@ h(MyComponent, null ,{
 })
 ```
 
+#### Usage
 
+이 챕터에서는 직접적인 사용 방법을 예시로 간단하게 알아볼 것이다. 위에서 보았듯이 가상돔을 렌더링하는 방식은 `h()`함수를 이용하는 방식과 `render()`함수를 이용하는 방식이 있다.
 
-#### innerHTML of Slots
+1. `h()`의 경우
 
-Slots에 임의로 값을 주고 싶은 경우 어떻게 해야 될까? this.$slots.*SLOT_NAME*을 통해 Slot에 들어온 값을 배정할 수 있다.
+   ```javascript
+   // h-example.js
+   import { h } from 'vue'
+   
+   export const HExample = {
+     // 부모 컴포넌트로부터 전달받은 props
+     props: {
+       tag: {
+         type: String,
+         default: 'div'
+       },
+       color: {
+         type: String,
+         default: 'red'
+       }
+     },
+     setup (props, context) {
+       const {
+         attrs,
+         slots,
+         emit,
+         expose
+       } = context
+       // h를 직접 return시, 다른 변수들은 return이 불가능한데, 
+       // 이 경우 expose와 ref를 통해 부모 컴포넌트에 값을 전달할 수 있다.
+       const abc = () => `현재 props로 전달받은 태그 값은 ${props.tag}`
+       const def = 'expose를 통해 값이 전달됩니다.'
+       // expose 통한 return
+       expose({
+         abc,
+         def
+       })
+       // context의 properties
+       console.log(attrs, slots, emit, expose)
+       return () => {
+         // h 직접 return
+         return h(props.tag,
+           { style: [`color: ${props.color}`] },
+           // [] 내 순서대로 rendering 된다.
+           [
+             'Children 1번입니다.', h('div', 'Children 2번 입니다.'), slots.default && slots.default()
+           ])
+       }
+     }
+   }
+   
+   
+   ```
 
+   
 
+   ```vue
+   <!-- Vue -->
+   <template>
+     <div class="h">
+       <HExample color="black" ref="hexample">
+         <template #default>
+           <br />
+           <div>{{ def }}</div>
+           <div>{{ abc }}</div>
+         </template>
+       </HExample>
+     </div>
+   </template>
+   
+   <script>
+   import { HExample } from '@/assets/js/h-example.js'
+   import { ref, onMounted } from 'vue'
+   export default {
+     name: 'HyperScriptView',
+     components: {
+       HExample
+     },
+     setup () {
+       // ref와 동일한 이름 가진 변수 설정시, ref와 같이 작동
+       const hexample = ref(null)
+       const abc = ref('')
+       const def = ref('')
+       // ref onMounted 이후 읽기 가능.
+       onMounted(() => {
+         abc.value = hexample.value.abc()
+         def.value = hexample.value.def
+       })
+       return {
+         hexample,
+         abc,
+         def
+       }
+     }
+   }
+   </script>
+   ```
+
+   ```html
+   <!-- result -->
+   <div class="h">
+     <div style="color: black">
+       "Children 1번입니다."
+       <div>Children 2번 입니다.</div>
+       <br />
+       <div>expose를 통해 값이 전달됩니다.</div>
+       <div>현재 props로 전달받은 태그 값은 div</div>
+     </div>
+   </div>
+   ```
+
+   
+
+2. render의 경우
+   위의 결과를 `render()`함수로 똑같이 만들어보자.
+   ```javascript
+   // render-example.js
+   import { h } from 'vue'
+   
+   export const RenderExample = {
+     props: {
+       tag: {
+         type: String,
+         default: 'div'
+       },
+       color: {
+         type: String,
+         default: 'red'
+       }
+     },
+     data () {
+       return {
+         abc: `현재 props로 전달받은 태그 값은 ${this.tag}`,
+         def: 'this.$refs를 통해 값이 전달됩니다.'
+       }
+     },
+     render ($setup) {
+       return h(this.tag,
+         { style: [`color: ${this.color}`] },
+         [
+           'Children 1번입니다.', h('div', 'Children 2번 입니다.'),
+         	// default()에 slotProps 전달
+           this.$slots.default && this.$slots.default({ abc: this.abc, def: this.def })
+         ]
+       )
+     }
+   }
+   ```
+
+   ```vue
+   <template>
+     <div class="render">
+       <RenderExample color="blue" ref="child_comp">
+         <template #default="props" v-if="def">
+           <!-- slot Props 이용 -->
+           {{ props.abc }}
+           <!-- refs 이용 -->
+           <div>{{ def }}</div>
+         </template>
+       </RenderExample>
+     </div>
+   </template>
+   <script>
+   import { RenderExample } from '@/assets/js/render-example.js'
+   export default {
+     components: {
+       RenderExample
+     },
+     data () {
+       return {
+         def: null
+       }
+     },
+     methods: {
+     },
+     // mounted가 완료된 이후 $refs 조회가 가능하다.
+     mounted () {
+       this.def = this.$refs.child_comp.def
+     }
+   }
+   </script>
+   
+   ```
+
+   ```html
+   <div class="render">
+     <div style="color: blue;">
+       "Children 1번입니다."
+       <div>Children 2번 입니다.</div>
+   		"현재 props로 전달받은 태그 값은 div"
+       <div>this.$refs를 통해 값이 전달됩니다.</div>
+     </div>
+   </div>
+   ```
+
+   `render()`를 이용한 구현은 좀 더 Vue2의 Options API를 적극적으로 활용한 코드에 가깝게 보인다.
+
+##### Slots in render function
 
 
 
@@ -1562,9 +1762,11 @@ https://sweetalert2.github.io/#download
 
 no-trailing-space 설정 끄기
 
+https://docs.w3cub.com/
+
 ## 정리할 것
 
-eslint 설정 / Slots 마무리 / reactivity(reactive 및 ref) / Composables / export default와 export const-function간 import 방식 차이
+eslint 설정 / Slots 마무리 / reactivity(reactive 및 ref) /  export default와 export const-function간 import 방식 차이
 
 ---
 
