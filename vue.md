@@ -31,6 +31,8 @@ Child.vue
 </div>
 ```
 
+
+
 Parent.vue
 
 ```vue
@@ -945,6 +947,7 @@ h(MyComponent, null ,{
        HExample
      },
      setup () {
+       // setup의 경우 this의 사용이 불가능하므로 this.$refs가 불가능.
        // ref와 동일한 이름 가진 변수 설정시, ref와 같이 작동
        const hexample = ref(null)
        const abc = ref('')
@@ -976,8 +979,6 @@ h(MyComponent, null ,{
      </div>
    </div>
    ```
-
-   
 
 2. render의 경우
    위의 결과를 `render()`함수로 똑같이 만들어보자.
@@ -1016,6 +1017,7 @@ h(MyComponent, null ,{
    ```
 
    ```vue
+   <!-- Vue -->
    <template>
      <div class="render">
        <RenderExample color="blue" ref="child_comp">
@@ -1049,8 +1051,9 @@ h(MyComponent, null ,{
    </script>
    
    ```
-
+   
    ```html
+   <!-- Result -->
    <div class="render">
      <div style="color: blue;">
        "Children 1번입니다."
@@ -1060,14 +1063,546 @@ h(MyComponent, null ,{
      </div>
    </div>
    ```
-
+   
    `render()`를 이용한 구현은 좀 더 Vue2의 Options API를 적극적으로 활용한 코드에 가깝게 보인다.
 
-##### Slots in render function
+---
 
 
 
-### Building LIbrary
+#### Slots in render function
+
+컴포넌트 내에 render function으로 만들어진 DOM을 반환하는 컴포넌트를 불러온다고 가정해보자. 우리는 이와 같이 코드를 짤 수 있을 것이다.
+
+```javascript
+// javascript
+import { h } from 'vue'
+export const WithoutSlots = {
+  setup () {
+    return () => {
+      return h('div', [], {})
+    }
+  }
+}
+```
+
+```vue
+<template>
+<div>
+  <without-slots>컨텐츠를 넣고 싶어요.</without-slots>
+</div>
+</template>
+<script>
+import { WithoutSlots } from '@/assets/js/render-function/without-slots.js'
+export default {
+  components: {
+    WithoutSlots
+  }
+}
+</script>
+```
+
+```html
+<!-- Result -->
+<div>
+  <!-- 아무것도 들어오지 않는다. -->
+  <div></div>
+</div>
+```
+
+하지만 부모 컴포넌트에서 보낸 값을 자식 컴포넌트에서 읽지 못한다. 위와 같은 경우 사용했던 것이 [Slots](#Slots)인데, Render function에도 Slots를 줄 수 있다.
+
+```javascript
+// js
+export const WithSlots = {
+  setup (props, context) {
+    const {
+      slots
+    } = context
+    return () => {
+      // slots.default로 slot에 들어온 값이 있는 지 체크 후, default() 함수를 실행해 리스트를 읽어온다.
+      return h('div', {}, [slots.default && slots.default()])
+    }
+  }
+}
+```
+
+```vue
+<!-- vue -->
+<template>
+<div>
+  <without-slots>컨텐츠를 넣고 싶어요.</without-slots>
+  <with-slots>슬롯을 선언한 경우에요.</with-slots>
+</div>
+</template>
+<script>
+import { WithoutSlots, WithSlots } from '@/assets/js/render-function/without-slots.js'
+export default {
+  components: {
+    WithoutSlots,
+    WithSlots
+  }
+}
+</script>
+```
+
+```html
+<div>
+  <div></div>
+  <div>슬롯을 선언한 경우에요.</div>
+</div>
+```
+
+---
+
+
+
+##### Return from slots.default()
+
+`h()`함수 내 Slots의 동작 원리에 대해 조금 더 알아보자. `slots.default()`는 무엇을 반환할까?
+
+```javascript
+// javascript
+export const WithSlots = {
+  setup (props, context) {
+    const {
+      slots
+    } = context
+    return () => {
+      // default 슬롯을 부모 컴포넌트가 사용했는 지 확인 후(slots.default)
+      // 사용한 경우 default() 함수를 통해 리스트를 반환받는다.
+      return h('div', {}, [console.log(slots.default()), slots.default && slots.default()])
+    }
+  }
+}
+```
+
+```vue
+<!-- vue -->
+<template>
+<div>
+  <with-slots>
+    <div ref="hello">안녕하세요.</div>
+  </with-slots>
+</div>
+</template>
+<script>
+import { WithSlots } from '@/assets/js/render-function/without-slots.js'
+export default {
+  components: {
+    WithoutSlots
+  }
+}
+</script>
+```
+
+```javascript
+// slots.default() 반환 객체
+// Slot이 상위 컴포넌트에 선언된 경우, 그 값을 포함한 List를 반환한다.
+[{…}]
+[
+  0:
+	{
+    anchor: null
+    appContext: null
+    children: "안녕하세요."
+    component: null
+    dirs: null
+    dynamicChildren: null
+    dynamicProps: null
+    el: null
+    key: null
+    patchFlag: 512
+    props: {ref: 'hello'}
+    ref: {i: {…}, r: 'hello', k: undefined, f: false}
+    scopeId: null
+    shapeFlag: 9
+    slotScopeIds: null
+    ssContent: null
+    ssFallback: null
+    staticCount: 0
+    suspense: null
+    target: null
+    targetAnchor: null
+    transition: null
+    type: "div"
+    __v_isVNode: true
+    __v_skip: true
+    [[Prototype]]: Object
+    length: 1
+    [[Prototype]]: Array(0)
+  }
+]
+```
+
+```vue
+<!-- vue -->
+<template>
+<div>
+  <with-slots>
+    <template #default>안녕</template>
+  </with-slots>
+</div>
+</template>
+<script>
+import {  WithSlots } from '@/assets/js/render-function/without-slots.js'
+export default {
+  components: {
+    WithSlots
+  }
+}
+</script>
+```
+
+```html
+<!-- result -->
+<div>
+  <div>안녕</div>
+</div>
+```
+
+만약 그렇다면, Slots을 선언은 했지만 비워서 보낸다면 어떻게 될까? 비어있는 List를 반환한다.
+
+```vue
+<!-- vue -->
+<template>
+<div>
+  <with-slots>
+    <!-- 값이 없다. -->
+    <template #default></template>
+  </with-slots>
+</div>
+</template>
+<script>
+import {  WithSlots } from '@/assets/js/render-function/without-slots.js'
+export default {
+  components: {
+    WithSlots
+  }
+}
+</script>
+```
+
+```javascript
+// slots.default() 반환 객체
+// 빈 list를 반환한다.
+[]
+```
+
+하지만 template 내 주석이 있는 경우, **children**으로 인식하므로 주의할 것!
+
+```vue
+<template #foo>
+	<!-- 반갑습니다. Foo slot입니다. -->
+</template>
+```
+
+```javascript
+[{...}]
+	{ 0:
+  	[
+  	anchor: null,
+  	appContext: null,
+	  children: " 반갑습니다. Foo slot입니다. "
+  	...
+  	]
+	}
+```
+
+---
+
+
+
+##### Default Value of Slots
+
+위의 결과를 응용하면, Slots에 Default 값을 줄 수 있다.
+
+```javascript
+// js
+export const WithSlots = {
+  setup (props, context) {
+    const {
+      slots
+    } = context
+    return () => {
+      // list[0] != null인 경우, children이 있음을 의미
+      return h('div', {}, [slots.default && slots.default()[0] ? slots.default() : 'Default 값입니다.'])
+    }
+  }
+}
+```
+
+```vue
+<!-- vue -->
+<template>
+<div>
+  <with-slots>
+    <template #default></template>
+  </with-slots>
+</div>
+</template>
+<script>
+import {  WithSlots } from '@/assets/js/render-function/without-slots.js'
+export default {
+  components: {
+    WithSlots
+  }
+}
+</script>
+```
+
+```html
+<!-- result -->
+<div>
+  <div>Default 값입니다.</div>
+</div>
+```
+
+---
+
+
+
+##### Named Slot in render function
+
+`setup(props, context)`의 매개변수(Parameter) context내 Slots은 **하나의 객체(Object)**이다. 따라서 Named Slot은 `Slots[PropertyName]`혹은 `SlotsName.PropertyName`의 형태로 불러올 수 있다.(eslint에선 Dot notation (.PropertyName)을 더 좋은 방식으로 추천한다.)
+
+```javascript
+// js
+export const NamedSlot = {
+  setup (props, context) {
+    const {
+      slots
+    } = context
+    return () => {
+      // default, foo 순서로 children 컴포넌트를 구성했다.
+      return h('div', {}, [slots.default && slots.default()[0] ? slots.default() : h('div', {}, ['Default 값입니다.']), slots.foo && slots.foo[0] ? slots.foo() : 'Foo Slot default'])
+    }
+  }
+}
+```
+
+```vue
+<!-- vue -->
+<component>
+  <!-- foo, default 순서로 보내도.. -->
+  <template #foo>
+		반갑습니다. Foo slot입니다.
+  </template>
+  <div>Named Slot 내부입니다.</div>
+</component>
+```
+
+```html
+<!-- result -->
+<!-- 순서는 h() 내에 정의한 순서를 따라서 배치된다. -->
+<div>
+  <div>Named Slot 내부입니다.</div>
+  " 반갑습니다. Foo Slot 입니다."
+</div>
+```
+
+
+
+##### Components in render function and Slots
+
+render function의 *type* 매개변수에 html tag를 넣지 않고 컴포넌트를 불러오는 경우, 컴포넌트 내부에 Slot의 Default 값을 지정해줄 수 있다. 하지만 불러오는 방식을 다르게 해야 한다. 기존의 불러오는 방식대로 불러와 보자.
+
+```javascript
+function h(Component, {...Props}, [...Children])
+```
+
+
+
+```vue
+<!-- Child.vue -->
+<template>
+  <div>
+    <div>Child.vue입니다.</div>
+    <!-- default, bar의 순서이다. -->
+    <slot>
+      Child Default에용
+    </slot>
+    <slot name="bar">
+      <div> Child Bar에용</div>
+    </slot>
+  </div>
+</template>
+<script>
+export default {
+  name: 'ChildComponent',
+  setup () {}
+}
+</script>
+```
+
+```vue
+<!-- ParentView.vue -->
+<template>
+<div>
+  <CompSlot>
+    <!-- default, bar의 순서이다. -->
+    <template #default>
+      안녕하세요? Parent의 Default입니다.
+    </template>
+    <template #bar>
+      <div>
+        네, Parent의 bar입니다. 반갑습니다.
+      </div>
+    </template>
+  </CompSlot>
+</div>
+</template>
+<script>
+import { CompSlot } from '@/assets/js/render-function/slots.js'
+export default {
+  components: {
+    CompSlot
+  }
+}
+</script>
+
+```
+
+```javascript
+// js
+import Child from '${PATH}/Child.vue'
+export const CompSlot = {
+  components: {
+    Child
+  },
+  setup (props, context) {
+    const {
+      slots
+    } = context
+    return () => {
+      // bar, default의 순서이다.
+      return h(Child, {}, [slots.bar && slots.bar(), context.slots.default && context.slots.default()])
+    }
+  }
+}
+```
+
+```html
+<!-- result -->
+<div>
+  <div>Child.vue입니다.</div>
+  <!-- 부모의 #bar -->
+  <div>네, Parent의 bar입니다. 반갑습니다.</div>
+  <!-- 부모의 #default -->
+  "안녕하세요? Parent의 default입니다."
+  <!-- Child의 slot name="bar" Default값이 여기에? -->
+  <div>Child Bar에용</div>
+</div>
+```
+
+두 가지 점을 알 수 있다.
+
+- `Child.vue`의 구조가 아닌 `h()`function의 Children 순서에 맞추어 출력된다.
+- 출력되지 말았어야 할 `<div>Childe Bar에용</div>`가 출력되었다.
+
+위에서 발생한 문제를 방지하려면 *Children* Arguments를 전달할 때, Object 형태로 보내주어야 한다.
+
+```javascript
+// js
+import Child from '${PATH}/Child.vue'
+export const CompSlot = {
+  components: {
+    Child
+  },
+  setup (props, context) {
+    const {
+      slots
+    } = context
+    return () => {
+      // bar, default의 순서이다.
+      // Object 형태로 Children을 보내준다.
+      return h(Child, {}, {
+        default: context.slots.bar && context.slots.bar(), 
+        bar: () => context.slots.default && context.slots.default()])
+    	}
+    }
+  }
+}
+```
+
+```html
+<!-- result -->
+<div>
+  <div>Child.vue입니다.</div>
+  <!-- Child.vue에 정의된 순서에 따라 slot이 제대로 배치되었다. -->
+  "안녕하세요? Parent의 default입니다."
+  <div>네, Parent의 bar입니다. 반갑습니다.</div>
+</div>
+```
+
+의도했던 대로 결과가 들어온다.
+
+- Child.vue의 구성에 맞게 컴포넌트가 출력이 된다.
+- Parent에서 값을 주었을 때, Child에 설정한 Default 값이 출력되지 않고 있다.
+
+##### Slot Props
+
+Slot Props 이런 형태로 줄 수 있다.
+
+`return h(..., [slots.default({ PROPS_NAME: PROPS_VALUE })])`
+
+ Slots에서도 언급했지만, 일반적인 Props가 부모 컴포넌트로부터 자식 컴포넌트에 데이터를 전달하는 것과 달리, Slot Props는 Slot이 정의된 컴포넌트에서 Slot이 정의된 컴포넌트를 호출한 컴포넌트에 데이터를 전달한다.(자식에서 부모로 데이터가 전달되는 것처럼 느껴질 수 있다.)
+
+```javascript
+// js
+export const SlotProps = {
+  setup (props, context) {
+    const state = reactive({
+      food: ['burger', 'chicken', 'ramyeon'],
+      beverage: ['powerade', 'coke', 'cider']
+    })
+    const {
+      slots
+    } = context
+    return () => {
+      // props 전달
+      return h('div', {}, [slots.default && slots.default({ state: toRefs(state) })])
+    }
+  }
+}
+```
+
+```vue
+<!-- vue -->
+<template>
+<div>
+  Render function의 Slot Props Test
+  <slot-props>
+    <!-- #SLOT_NAME="PROPS_NAME" 형태로 호출. PROPS_NAME은 자유롭게 줄 수 있다.-->
+    <template #default="props">
+      {{ props }}
+    </template>
+  </slot-props>
+</div>
+</template>
+<script>
+import { SlotProps } from '@/assets/js/render-function/slots.js'
+export default {
+  components: {
+    SlotProps
+  }
+}
+</script>
+```
+
+```html
+<!-- result -->
+<div>
+  " Render function의 Slot Props Test "
+  <div>
+    { "state": { "food": ["burger", "chicken", "ramyeon"], "beverage": ["powerade", "coke", "cider"] } }
+  </div>
+</div>
+```
+
+
+
+### Building SLIDER LIbrary
 
 Test.vue
 

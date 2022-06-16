@@ -31,7 +31,7 @@ export const HExample = {
       return h(props.tag,
         { style: [`color: ${props.color}`] },
         [
-          'Children 1번입니다.', h('div', 'Children 2번 입니다.'), slots.default && slots.default()
+          'Children 1번입니다.', h('div', 'Children 2번 입니다.'), slots.default && slots.default({ contents: [abc(), def] })
         ])
     }
   }
