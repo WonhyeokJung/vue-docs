@@ -6,6 +6,7 @@
 
 1. [컴포넌트 재활용](#컴포넌트 재활용)
    1. [Slots](#Slots)
+      1. [Default Slot](#Default-Slot)
 
 ---
 ## Reusability
