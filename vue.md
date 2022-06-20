@@ -12,11 +12,11 @@
 ## Reusability
 ### Slots
 
-다른 컴포넌트를 사용할 때 해당 컴포넌트의 마크업을 재정의하거나 확장할 때 사용한다.
+다른 컴포넌트를 사용할 때 해당 컴포넌트의 마크업을 재정의하거나 확장할 때 사용한다. 흔히 자주 사용하는 컴포넌트의 `layout`을 짜두고자 할 때 slot을 이용한 컴포넌트를 작성하게 된다.
 
 디자인의 통일성을 유지하면서, 컴포넌트의 컨텐츠만 상황에 맞게 쓸 수 있는 장점이 있다.
 
-Modal처럼 여러 화면에서 자주 사용하게 되는 컴포넌트에 Slot을 적용하게 된다.
+Modal처럼 여러 화면에서 자주 사용하게 되는 컴포넌트를 Slot을 적용하게 된다.
 
 
 
@@ -2299,6 +2299,8 @@ https://sweetalert2.github.io/#download
 no-trailing-space 설정 끄기
 
 https://docs.w3cub.com/
+
+https://stackoverflow.com/questions/62023604/where-to-find-or-how-to-set-htmlwebpackplugin-options-title-in-project-created-w
 
 ## 정리할 것
 

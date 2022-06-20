@@ -1,33 +1,114 @@
 <template>
-  <nav>
-    <router-link to="/">h()</router-link> |
-    <router-link to="/render">render()</router-link> |
-    <router-link to="/slots">슬롯 유무차이</router-link> |
-    <router-link to="/components">컴포넌트로 슬롯 Default 값 설정</router-link> |
-    <router-link to="/slotprops">슬롯 프롭스의 사용</router-link> |
-  </nav>
-  <router-view/>
+  <div>
+      <h1 class="main-title">Slots</h1>
+      <div class="app-container">
+        <nav>
+          <h2>목록</h2>
+          <ul>
+            <li><router-link to="/">h()</router-link></li>
+            <li><router-link to="/render">render()</router-link></li>
+            <li><router-link to="/slots">슬롯 유무차이</router-link></li>
+            <li><router-link to="/components">컴포넌트로 슬롯 Default 값 설정</router-link></li>
+            <li><router-link to="/slotprops">슬롯 프롭스의 사용</router-link></li>
+          </ul>
+        </nav>
+        <router-view />
+      </div>
+    </div>
 </template>
 
 <style>
+@font-face {
+    font-family: 'GangwonEdu_OTFBoldA';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  margin: 50px;
+  font-family: 'GangwonEdu_OTFBoldA';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
 }
 
+.main-title {
+  /* margin-bottom: 0; */
+  padding-bottom: 10px;
+  border-bottom: 2px solid #2c3e50;
+}
+
+.app-container {
+  display: grid;
+  grid-template-columns: 150px auto;
+}
+
 nav {
-  padding: 30px;
+  /* position: fixed; */
+  padding: 10px;
+  border-right: 2px solid #2c3e50;
+  text-align: start;
+}
+
+nav ul {
+  list-style-type: none;
+  margin: 0 auto;
+  padding: 0;
+  /* width: 120px; */
+}
+
+nav li {
+  margin: 8px 3px;
+}
+
+/* nav li a:not(.router-link-active) {
+  display: none;
+}
+
+nav:hover li a {
+  display: block;
+} */
+
+nav a:hover:not(.router-link-active) {
+  color: rgb(10, 144, 206);
 }
 
 nav a {
-  font-weight: bold;
-  color: #2c3e50;
+  display: block;
+  font-size: 1em;
+  text-decoration: none;
+  color: black;
 }
 
 nav a.router-link-exact-active {
-  color: #42b983;
+  font-weight: bold;
+  color: orangered;
+}
+
+@media screen and (max-width: 750px) {
+  .app-container {
+    display: grid;
+    grid-template-columns: auto;
+  }
+
+  nav {
+    border-right: none;
+    border-bottom: 2px solid #2c3e50;
+    margin-bottom: 20px;
+  }
+
+  nav ul {
+    margin-left: 0;
+  }
+
+  nav h2 {
+    font-size: 1.3em;
+  }
+
+  nav a {
+    font-size: 1em;
+  }
 }
 </style>
