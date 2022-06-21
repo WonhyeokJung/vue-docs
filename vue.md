@@ -270,7 +270,13 @@ result
 </div>
 ```
 
+#### Renderless Components
 
+말그대로 마크업을 렌더링하지 않는 컴포넌트를 지칭하지만, 기능적인 의미에 가까우며 실제로는 `<slot>`을 통해 레이아웃(혹은 프레임)을 구성한 컴포넌트로, 다른 컴포넌트에 의해 사용되면서 렌더링하는 컴포넌트를 칭한다.(결국 렌더링이 완전히 일어나지 않는 컴포넌트가 아닌(Template이 없는!), 자기 스스로 렌더링하지 않는 컴포넌트에 가까운 뜻이라고 볼 수 있다. 물론, 정말로 template이나 render()자체가 없는 컴포넌트도 구현이 가능은 하겠지만, 이런 경우 [Composables](#Mixins-&-Composables)를 사용하는 것을 추천한다.)
+
+**Why a renderless component and not a mixin or directive?**
+
+Components are not the only way to reuse code in Vue, another way is to use a [Mixin](https://vuejs.org/v2/guide/mixins.html) or a [Custom Directive](https://vuejs.org/v2/guide/custom-directive.html). Both are fine ways to solve this problem. Renderless components utilizing scoped slots are operating the way Vue wants to work, it can be imported when needed just like you are used to with any other component. Thus it’s a very explicit way to reuse code as opposed to mixins or directives which don’t have to be included separately. In the end, it comes down to preference.
 
 #### Slot Props
 
@@ -2252,10 +2258,21 @@ export default {
 
 **vs. Mixins**
 
-Vue 2 사용자는 아마도 재사용 가능한 유닛 안에서  컴포넌트 논리를 추출하는 mixins 옵션과 친숙할 것이다. mixins에는 3가지의 주요한 문제점이 있다.
+Vue 2 사용자는 아마도 재사용 가능한 단위(Units)내에서 컴포넌트 논리를 추출하는 mixins 옵션과 친숙할 것이다. mixins에는 3가지의 주요한 문제점이 있다.
 
 1. **불분명한 속성의 출처**: 많은 mixins를 사용할 때, 어떤 인스턴스 프로퍼티가 어느 mixin에서 주입되었는 지 불분명해지며, 컴포넌트의 실행과정을 추적하고 이해하는 것을 어렵게 만든다. 이것이 Composables에서 refs와 구조분해 패턴의 사용을 추천하는 이유기도 하다. refs와 구조분해 패턴은 컴포넌트 내의 프로퍼티 출처를 명확하게 한다.
-2. **이름공간 충돌(Namespace collisions)**: 
+2. **이름공간 충돌(Namespace collisions)**: 여러 작성자들이 만든 다양한 mixins는 같은 속성키(Property keys)를 등록할 가능성을 내포하며, 이름 공간 충돌을 일으킬 수 있다. composables를 이용한다면,  여러 composable간의 키 값 충돌이 발생했을 때 구조분해된(destructured) 변수들의 이름을 변경할 수 있다.
+3. **암시적인 cross-mixin 커뮤니케이션**: 상호작용이 필요한 여러 mixins는 공유된 속성 키(Property keys)에 의존해야 하므로, 이는 mixin들을 암시적으로 결합시킨다. Composable을 이용하면, 하나의 composable로부터 반환된 값은 다른 composable의 인자(arguments)로 사용될 수 있다. 마치 일반 함수처럼 말이다!
+
+위와 같은 이유로, Vue 3에선 mixins의 사용을 더이상 추천하지 않는다. 
+
+**vs. Renderless Components**
+
+Component Slots 챕터에서, scoped slots에 기초하여 [Renderless Component](#Slot-Props)패턴에 대해 논의해 봤다. 심지어 renderless components를 이용한 마우스 추척 데모도 실행해 봤다.
+
+renderless Components에서의 composables의 주된 이점은 composables는 추가적인 **컴포넌트 인스턴스**를 만들지 않는다는 점이다. 전체 애플리케이션을 사용했을 때, renderless components에 의해 생성된 추가 컴포넌트 인스턴스의 양은 눈에 띄는 퍼포먼스 저하를 가져온다.
+
+추천사항은 단순 논리(pure logic)을 재사용할 경우 Composables를, 논리와 시각적인 레이아웃(visual layout) 둘 다 재사용하는 경우 components를 사용하라는 것이다. 예를 들면 Modal의 경우에는 visual layout(시각적 배치)도 재사용해야 하므로 Components를, Data fetching이나 좌표 구하기 등은은 단순히 값을 구하는 로직과 그에 따른 값만 전달해주면 되므로 Composable을 사용하는 것이 유리할 것이다.
 
 ## Reactivity
 
