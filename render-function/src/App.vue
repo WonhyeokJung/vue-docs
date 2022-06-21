@@ -25,11 +25,18 @@
     font-style: normal;
 }
 
+body {
+  margin: 0;
+}
+
 #app {
+  height: calc(100vh - 100px);
+  /* box-sizing: content-box; */
   margin: 50px;
   font-family: 'GangwonEdu_OTFBoldA';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 1.1em;
   text-align: center;
   color: #2c3e50;
 }
@@ -39,10 +46,13 @@
   padding-bottom: 10px;
   border-bottom: 2px solid #2c3e50;
 }
+.main-title span {
+  font-size: 2em;
+}
 
 .app-container {
   display: grid;
-  grid-template-columns: 150px auto;
+  grid-template-columns: 200px auto;
 }
 
 nav {
@@ -87,7 +97,18 @@ nav a.router-link-exact-active {
   color: orangered;
 }
 
+@media screen and (max-width: 900px) {
+  .app-container {
+    grid-template-columns: 150px auto;
+  }
+}
+
 @media screen and (max-width: 750px) {
+  #app {
+    margin: 10px;
+    /* min-width: 250px; */
+  }
+
   .app-container {
     display: grid;
     grid-template-columns: auto;
