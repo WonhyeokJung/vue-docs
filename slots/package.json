@@ -40,7 +40,12 @@
     "parserOptions": {
       "parser": "@babel/eslint-parser"
     },
-    "rules": {}
+    "rules": {
+      "no-tabs": [
+        "error",
+        { "allowIndentationTabs": true }
+      ]
+    }
   },
   "browserslist": [
     "> 1%",

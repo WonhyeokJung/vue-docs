@@ -1,3 +1,9 @@
+@font-face {
+  font-family: 'GangwonEdu_OTFBoldA';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
 html {overflow-x: initial !important;}
 :root { --bg-color:#363B40; --text-color:#333333; --select-text-bg-color:#B5D6FC; --select-text-font-color:auto; --monospace:"Lucida Console",Consolas,"Courier",monospace; --title-bar-height:20px; }
 .mac-os-11 { --title-bar-height:28px; }
@@ -5,13 +11,15 @@ html { font-size: 14px; background-color: var(--bg-color); color: var(--text-col
 body { margin: 0px; padding: 0px; height: auto; inset: 0px; font-size: 1rem; line-height: 1.42857; overflow-x: hidden; background: inherit; tab-size: 4; }
 /* 추가 */
 .typora-export-content {
-    text-align: start;
-    background-color: #363B40;
-    color: white;
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select:none;
-    user-select:none
+  margin:0 1.5rem;
+  background-color: #363B40;
+  text-align: start;
+  color: white;
+  font-family: 'GangwonEdu_OTFBoldA';
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+  user-select:none
 }
 iframe { margin: auto; }
 a.url { word-break: break-all; }

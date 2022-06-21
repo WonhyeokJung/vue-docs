@@ -5,7 +5,8 @@
         <nav>
           <h2>목록</h2>
           <ul>
-            <li><router-link to="/">h()</router-link></li>
+            <li><router-link to="/">Render Function</router-link></li>
+            <li><router-link to="/h">h()</router-link></li>
             <li><router-link to="/render">render()</router-link></li>
             <li><router-link to="/slots">슬롯 유무차이</router-link></li>
             <li><router-link to="/components">컴포넌트로 슬롯 Default 값 설정</router-link></li>

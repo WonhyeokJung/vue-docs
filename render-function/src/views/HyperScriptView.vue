@@ -4,8 +4,8 @@
     <HExample color="black" ref="hexample">
       <template #default="props">
         <br />
-        <div>{{ def }}</div>
-        <div>{{ abc }}</div>
+        <div>ref를 통한 접근으로 얻은 값1 : {{ def }}</div>
+        <div>ref를 통한 접근으로 얻은 값2 : {{ abc }}</div>
         <div>slot Props를 이용해 받은 값 : {{ props }}</div>
       </template>
     </HExample>
@@ -21,7 +21,7 @@ export default {
     HExample
   },
   setup () {
-    // ref 동일 이름 변수 설정
+    // ref 동일 이름 변수 설정 + refName.value로 값 조회가 가능하다.
     const hexample = ref(null)
     const abc = ref('')
     const def = ref('')

@@ -929,6 +929,7 @@ h(MyComponent, null ,{
    <!-- Vue -->
    <template>
      <div class="h">
+       <!-- 원하는 ref명을 설정한다. -->
        <HExample color="black" ref="hexample">
          <template #default>
            <br />
@@ -949,7 +950,7 @@ h(MyComponent, null ,{
      },
      setup () {
        // setup의 경우 this의 사용이 불가능하므로 this.$refs가 불가능.
-       // ref와 동일한 이름 가진 변수 설정시, ref와 같이 작동
+       // ref와 동일한 이름 가진 변수 설정시, refs와 같이 작동
        const hexample = ref(null)
        const abc = ref('')
        const def = ref('')

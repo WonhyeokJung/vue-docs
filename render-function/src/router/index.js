@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import HomeView from '../views/HomeView.vue'
 import HyperScript from '../views/HyperScriptView.vue'
 import SlotsView from '../views/SlotsView.vue'
 import ParentView from '../views/ParentView.vue'
@@ -6,6 +7,11 @@ import SlotProps from '../views/SlotProps.vue'
 const routes = [
   {
     path: '/',
+    name: 'home',
+    component: HomeView
+  },
+  {
+    path: '/h',
     name: 'hyperscript',
     component: HyperScript
   },
