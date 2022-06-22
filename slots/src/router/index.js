@@ -5,6 +5,7 @@ import SlotDefaultValue from '../views/SlotDefaultValue.vue'
 import NamedSlot from '../views/NamedSlot'
 import DynamicSlotName from '../views/DynamicSlotNames.vue'
 import SlotProps from '../views/SlotProps'
+import RenderlessComponents from '../views/RenderlessComponents.vue'
 
 const routes = [
   {
@@ -44,6 +45,11 @@ const routes = [
     path: '/slotprops',
     name: 'slotProps',
     component: SlotProps
+  },
+  {
+    path: '/renderless',
+    name: 'renderlessComp',
+    component: RenderlessComponents
   }
 ]
 

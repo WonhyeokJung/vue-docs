@@ -168,7 +168,23 @@ result
 </div>
 ```
 
+#### Render Scope
 
+Slot 컨텐츠는 부모 컴포넌트의 데이터 범위에 접근할 수 있는데, 그 이유는 슬롯 컨텐츠가 부모 컴포넌트에서 정의되기 때문이다. 예시를 보자.
+
+```vue
+<template>
+	<span>{{ message }}</span>
+	<!-- import한 컴포넌트의 컨텐츠는 부모 컴포넌트에서 적용된다. -->
+	<Component>{{ message }}</Component>
+</template>
+```
+
+두 `{{ message }}` 보간법(interpolations)는 같은 내용을 렌더할 것이다.
+
+Slot 컨텐츠는 자식 컴포넌트(즉, 슬롯이 정의된 컴포넌트)에 접근하지 못한다. 이 규칙을 기억해두자.
+
+> 부모 템플릿에 있는 모든 것은 부모 스코프에 컴파일된다. 자식 템플릿에 있는 템플릿은 자식 스코프에 컴파일된다.
 
 #### Named Slot
 
@@ -270,15 +286,200 @@ result
 </div>
 ```
 
-#### Renderless Components
+
+
+#### Scoped Slots
+
+[Render Scope](#Render-Scope)에서 이야기했던 것처럼, Slot 컨텐츠는 자식 컴포넌트의 상태(state)에 접근하지 못한다. 
+
+하지만, Slot 컨텐츠가 부모 스코프와 자식 스코프 양쪽에서 데이터를 사용할 수 있는 유용한 방법들이 있다. 이를 위해, 렌더링을 할 때 자식 컴포넌트의 Slot에서 데이터를 전달하는 방법이 필요하다.
+
+사실은, 컴포넌트에 Props를 전달하는 것처럼, slot outlet(element, tag)에 속성을 전달하는 것으로 할 수 있다.
+
+```vue
+<!-- MyComponent template -->
+<div>
+  <!-- Scoped slot outlet -->
+  <slot :text="greetingMessage" :count="1"></slot>
+  <!---->
+</div>
+<script>
+ export default {
+   setup() {
+     const greetingMessage = 'hello'
+     return {
+       greetingMessage
+     }
+   }
+ }
+</script>
+```
+
+Slot Props를 전달 받는 것은 단일(single) default slot을 사용할 때와 named slot 사용할 때에 따라 조금 다르다. 먼저 자식 컴포넌트 tag에 직접 `v-slot`을 선언해서, 단순 default slot을 사용할 때 slot props를 전달 받는 방법을 먼저 보자.
+
+Vue 2.6 이전
+
+```vue
+<MyComponent slot-scope="slotProps">
+  <!-- Scoped slot content -->
+	{{ slotProps.text }} {{ slotProps.count }}
+  <!---->
+</MyComponent>
+```
+
+Vue 2.6 이전에는 slot-scope라는 속성을 정의하여 Slot props를 전달받을 수 있었다. 하지만 의미적으로 뜻하는 바가 정확하지 않으며 혼동을 줄 수 있는 속성명이라고 판단되어 v-slot, 즉 directive처럼 명칭을 변경한다.(하지만 공식문서 항목명은 여전히 Scoped Slots이다.)
+
+현재(Vue2.6~)
+
+```vue
+<MyComponent v-slot="slotProps">
+	&#123;&#123; slotProps.text &#125;&#125; {{ slotProps.count }}
+</MyComponent>
+```
+
+위에서 본 것처럼 자식 컴포넌트(MyComponent)에서 부모 컴포넌트로 props가 전달된다. 기존에 사용하던 일반적인 Props는 **부모 컴포넌트로부터 자식 컴포넌트**로 데이터가 전달되던 것에 반해, slot Props는 **자식 컴포넌트에서 부모 컴포넌트**로 데이터가 전달되는 마치 **emit**처럼 작동하고 있다. 이는 **v-slot**이라는 **속성명(Property Name)**을 통해 데이터를 전달받아 Slot Props(Scoped Slots)롬 명명되었다고 보면 된다. 하지만 설명한 것처럼 자식 컴포넌트(슬롯이 정의된 컴포넌트)로부터 부모 컴포넌트(슬롯을 불러온 컴포넌트)의 구조임에 주의하자.
+
+ 자식 컴포넌트에 의해 Slot에 전달된 Props는 `v-slot`directive의 값(value)로서 사용이 가능하다. 
+
+자식 컴포넌트에서 함수로써 scoped slot을 전달하는 것도 생각해볼 수 있는데, 자식 컴포넌트를 호출하면서, 인수(arguments)로서 props를 전달할 수 있다.
+
+```javascript
+MyComponent({
+  // passing the default slot, but as a function
+  default: (slotProps) => {
+    return `${slotProps.text} ${slotProps.count}`
+  }
+})
+
+function MyComponent(slots) {
+  const greetingMessage = 'hello'
+  return (
+    `<div>${
+    	// call the slot function with props!
+    	slots.default({ text: greetingMessage, count: 1 })
+    }</div>`
+  )
+}
+```
+
+이는 scoped slots이 컴파일되는 방식과 아주 유사하며, render function을 사용할 때 scoped slot(slot props)를 사용하는 방식이다.
+
+어떻게 `v-slot="slotProps"`가 slot 함수의 특징과 매칭되는 지도 알아보자. 함수 인자(function arguments)처럼,  v-slot`에서 구조 분해(destructuring)를 사용할 수 있다.
+
+```vue
+<MyComponent v-slot="{ text, count }">
+	{{ text }} {{ count }}
+</MyComponent>
+```
+
+##### Named Scoped Slots
+
+Named scoped slots는 유사하게 작동한다 - slot props는 `v-slot`directive의 값(value)으로서 접근할 수 있다
+
+```vue
+<Component v-slot:slotName="slotProps"></Component>
+```
+
+단축표기(shorthand)를 사용할 때는, 이처럼 구성된다.
+
+```vue
+<MyComponent>
+	<template #header="headerProps">
+  	{{ headerProps }}
+  </template>
+	<template #default="defaultProps">
+  	{{ defaultProps }}
+  </template>
+	<template #footer="footerProps">
+  	{{ footerProps }}
+  </template>
+</MyComponent>
+```
+
+그리고, named slot에 props를 전달할 때는 이와 같다.
+
+```vue
+<slot name="header" message="hello" :something="variable"></slot>
+```
+
+##### Fancy List Example
+
+Scoped Slots의 좋은 케이스가 뭐가 있을 지 궁금할 수도 있다. 여기 예시가 있다: 여러 아이템 리스트를 렌더링하는 `<FancyList>`컴포넌트를 상상해보자. 데이터를 리모트(remote)할 때 보여줄 로딩 페이지를 만들고, 아이템 리스트를 보여주기 위해 데이터를 사용하고, 심지어 페이지네이션이나 무한 스크롤링(infinite scrolling) 등까지도 포함된 논리(logic)를 캡슐화해야 할 것이다. 하지만, 각 아이템을 어떻게 배치하고 디자인할 지에 대해선 부모 컴포넌트에게 맡겨 유연성을 주고 싶다. 결과는 아래와 비슷할 것이다.
+
+```vue
+<FancyList :api-url="url" :per-page="10">
+	<template #item="{ body, username, likes }">
+  	<div class="item">
+      <p>{{ body }}</p>
+      <p>by {{ username }} | {{ likes }} likes</p>
+    </div>
+  </template>
+</FancyList>
+```
+
+자식 컴포넌트인(Slot이 정의된 컴포넌트) `<FancyList>` 내부에, 다른 아이템 데이터들을 넣은 같은 `<slot>`을 여러 번 렌더링할 수도 있다.(`v-bind`로 객체 자체를 slot props로서 전달하고 있다. )
+
+```vue
+<ul>
+  <li v-for="item in items">
+  	<slot name="item" v-bind="item"></slot>
+  </li>
+</ul>
+```
+
+
+
+##### Renderless Components
 
 말그대로 마크업을 렌더링하지 않는 컴포넌트를 지칭하지만, 기능적인 의미에 가까우며 실제로는 `<slot>`을 통해 레이아웃(혹은 프레임)을 구성한 컴포넌트로, 다른 컴포넌트에 의해 사용되면서 렌더링하는 컴포넌트를 칭한다.(결국 렌더링이 완전히 일어나지 않는 컴포넌트가 아닌(Template이 없는!), 자기 스스로 렌더링하지 않는 컴포넌트에 가까운 뜻이라고 볼 수 있다. 물론, 정말로 template이나 render()자체가 없는 컴포넌트도 구현이 가능은 하겠지만, 이런 경우 [Composables](#Mixins-&-Composables)를 사용하는 것을 추천한다.)
 
-**Why a renderless component and not a mixin or directive?**
+이어서 위의 `<FancyList>`에 대해 이야기해 보자면, `<FancyList>`는 재사용가능한 로직(data fetching, pagination 등)과 시각적 출력(visual output) 둘 다 캡슐화한 사례다(scoped slot을 이용하여 자신을 호출한 컴포넌트에게 visual output 일부를 위임하긴 했지만)
 
-Components are not the only way to reuse code in Vue, another way is to use a [Mixin](https://vuejs.org/v2/guide/mixins.html) or a [Custom Directive](https://vuejs.org/v2/guide/custom-directive.html). Both are fine ways to solve this problem. Renderless components utilizing scoped slots are operating the way Vue wants to work, it can be imported when needed just like you are used to with any other component. Thus it’s a very explicit way to reuse code as opposed to mixins or directives which don’t have to be included separately. In the end, it comes down to preference.
+만약 이 개념을 조금 더 확장해서, 스스로는 아무것도 렌더링하지 않고, 논리(logic)만을 캡슐화하는 컴포넌트를 사용하면 어떨까? - visual output은 scoped slots와 함께 완전히 부모 컴포넌트에게 위임하고 말이다! Vue에서는 이를 **Renderless Component**라고 부른다.
 
-#### Slot Props
+렌더리스 컴포넌트의 예시로는 현재 마우스 커서의 위치를 추적하는 논리를 캡슐화한 것을 들 수 있다.
+
+```vue
+<!-- MouseTracker.vue -->
+<template>
+  <slot :x="x" :y="y"/>
+</template>
+<script>
+export default {
+  data() {
+    return {
+      x: 0,
+      y: 0
+    }
+  },
+  methods: {
+    update(e) {
+      this.x = e.pageX
+      this.y = e.pageY
+    }
+  },
+  mounted() {
+    window.addEventListener('mousemove', this.update)
+  },
+  unmounted() {
+    window.removeEventListener('mousemove', this.update)
+  }
+}
+</script>
+```
+
+```vue
+<!-- Parent -->
+<MouseTracker v-slot="{x, y}">
+	Mouse is at: {{ x }}, {{ y }}
+</MouseTracker>
+```
+
+이 흥미로운 패턴, Renderless Components의 최대 장점은 추가적인 컴포넌트 중첩 없이 Composition API와 함께 이용하여 더 효율적인 컴포넌트를 만들 수 있단 것이다. [Composables](#Mixins-&-Composables)챕터를 확인하면서 위 마우스 추적기 로직을 어떻게 기능적으로 이용하는 지 확인할 것이다.
+
+어쨌거나, scoped slots은 여전히 논리와 visual output을 동시에 캡슐화해야 할 때 아주 유용하다. `<FancyList>`예제 처럼 말이다.
+
+##### Slot Props Usage
 
 `<slot></slot>`이 선언되어 있는 자식 컴포넌트의 데이터 값을 부모 컴포넌트에서 사용하고 싶은 경우가 있을 것이다. 그런 경우 사용하는 것이 **Slot Props(슬롯 속성)**이다.
 
@@ -336,6 +537,21 @@ result
 </div>
 ```
 
+혹은 객체 구조 분해 할당(Object Destructuring)을 사용해서 이와 같이 불러올 수도 있다.
+
+Parent.vue
+
+```vue
+<child>
+	<template v-slot:container="{ userData, fruitsData }">
+		{{ userData }}
+		{{ typeof(userData) }}
+  </template>
+</child>
+```
+
+
+
 `#slotName="slotPropsName"`을 할당해주면 자식 컴포넌트가 `v-bind`를 이용해 보낸 데이터 값을 참조할 수 있게 된다.
 
 `slotPropsName`은 자식 컴포넌트의 Slot에서 바인딩된 데이터들 값을 가지는 **Object**이다.
@@ -344,7 +560,7 @@ result
 
 #### 에러 발생 케이스
 
-Parent.vue에서 같은 Slot을 두번 이상 호출하면 에러가 발생한다.
+Parent.vue에서 Child.vue에서 정의한 `<slot>` 수보다 많은 슬롯을 호출하면 에러가 발생한다.
 
 ```vue
 <!--Parent.vue-->
@@ -496,8 +712,8 @@ Vue의 Render Function은 `h()`함수를 이용해 사용할 수 있다. `h()`�
 기본적인 구조는 아래와 같다.
 
 ```javascript
-function h(Type(타입, 태그), { ...Props(프로퍼티, 태그 속성) }, [ ...Children(자식, 자식 태그) ]) {
-  return `<${Type} ${...Props}>${Children}</${Tag}>`
+function h(Type(타입, 태그명), { ...Props(프로퍼티, 태그 속성) }, [ ...Children(자식, 자식 태그) ]) {
+  return `<${Type(element, tag)} ${...Props}>${Children}</${Tag}>`
 }
 ```
 
@@ -2272,7 +2488,7 @@ Component Slots 챕터에서, scoped slots에 기초하여 [Renderless Component
 
 renderless Components에서의 composables의 주된 이점은 composables는 추가적인 **컴포넌트 인스턴스**를 만들지 않는다는 점이다. 전체 애플리케이션을 사용했을 때, renderless components에 의해 생성된 추가 컴포넌트 인스턴스의 양은 눈에 띄는 퍼포먼스 저하를 가져온다.
 
-추천사항은 단순 논리(pure logic)을 재사용할 경우 Composables를, 논리와 시각적인 레이아웃(visual layout) 둘 다 재사용하는 경우 components를 사용하라는 것이다. 예를 들면 Modal의 경우에는 visual layout(시각적 배치)도 재사용해야 하므로 Components를, Data fetching이나 좌표 구하기 등은은 단순히 값을 구하는 로직과 그에 따른 값만 전달해주면 되므로 Composable을 사용하는 것이 유리할 것이다.
+추천사항은 단순 논리(pure logic)을 재사용할 경우 Composables를, 논리와 시각적인 레이아웃(visual layout) 둘 다 재사용하는 경우 Components를 사용하라는 것이다. 예를 들면 Modal의 경우에는 visual layout(시각적 배치)도 재사용해야 하므로 Components를, Data fetching이나 좌표 구하기 등은 단순히 값을 구하는 로직과 그에 따른 값만 전달해주면 되므로 Composable을 사용하는 것이 유리할 것이다.
 
 ## Reactivity
 

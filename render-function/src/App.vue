@@ -1,6 +1,6 @@
 <template>
   <div>
-      <h1 class="main-title">Slots</h1>
+      <h1 class="main-title" @click="toHome" style="cursor: pointer;">렌더 함수</h1>
       <div class="app-container">
         <nav>
           <h2>목록</h2>
@@ -17,6 +17,18 @@
       </div>
     </div>
 </template>
+<script>
+import { useRouter } from 'vue-router'
+export default {
+  setup () {
+    const router = useRouter()
+    const toHome = () => router.push('/')
+    return {
+      toHome
+    }
+  }
+}
+</script>
 
 <style>
 @font-face {

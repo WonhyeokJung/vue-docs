@@ -410,10 +410,83 @@ Named scoped slots는 유사하게 작동한다 - slot props는 `v-slot`directiv
 ```
 
 
+### Fancy List Example
+
+Scoped Slots의 좋은 케이스가 뭐가 있을 지 궁금할 수도 있다. 여기 예시가 있다: 여러 아이템 리스트를 렌더링하는 `<FancyList>`컴포넌트를 상상해보자. 데이터를 리모트(remote)할 때 보여줄 로딩 페이지를 만들고, 아이템 리스트를 보여주기 위해 데이터를 사용하고, 심지어 페이지네이션이나 무한 스크롤링(infinite scrolling) 등까지도 포함된 논리(logic)를 캡슐화해야 할 것이다. 하지만, 각 아이템을 어떻게 배치하고 디자인할 지에 대해선 부모 컴포넌트에게 맡겨 유연성을 주고 싶다. 결과는 아래와 비슷할 것이다.
+
+```vue
+<FancyList :api-url="url" :per-page="10">
+	<template #item="{ body, username, likes }">
+  	<div class="item">
+      <p>{{ body }}</p>
+      <p>by {{ username }} | {{ likes }} likes</p>
+    </div>
+  </template>
+</FancyList>
+```
+
+자식 컴포넌트인(Slot이 정의된 컴포넌트) `<FancyList>` 내부에, 다른 아이템 데이터들을 넣은 같은 `<slot>`을 여러 번 렌더링할 수도 있다.(`v-bind`로 객체 자체를 slot props로서 전달하고 있다. )
+
+```vue
+<ul>
+  <li v-for="item in items">
+  	<slot name="item" v-bind="item"></slot>
+  </li>
+</ul>
+```
+
 
 ### Renderless Components
 
 말그대로 마크업을 렌더링하지 않는 컴포넌트를 지칭하지만, 기능적인 의미에 가까우며 실제로는 `<slot>`을 통해 레이아웃(혹은 프레임)을 구성한 컴포넌트로, 다른 컴포넌트에 의해 사용되면서 렌더링하는 컴포넌트를 칭한다.(결국 렌더링이 완전히 일어나지 않는 컴포넌트가 아닌(Template이 없는!), 자기 스스로 렌더링하지 않는 컴포넌트에 가까운 뜻이라고 볼 수 있다. 물론, 정말로 template이나 render()자체가 없는 컴포넌트도 구현이 가능은 하겠지만, 이런 경우 [Composables](#Mixins-&-Composables)를 사용하는 것을 추천한다.)
+
+이어서 위의 `<FancyList>`에 대해 이야기해 보자면, `<FancyList>`는 재사용가능한 로직(data fetching, pagination 등)과 시각적 출력(visual output) 둘 다 캡슐화한 사례다(scoped slot을 이용하여 자신을 호출한 컴포넌트에게 visual output 일부를 위임하긴 했지만)
+
+만약 이 개념을 조금 더 확장해서, 스스로는 아무것도 렌더링하지 않고, 논리(logic)만을 캡슐화하는 컴포넌트를 사용하면 어떨까? - visual output은 scoped slots와 함께 완전히 부모 컴포넌트에게 위임하고 말이다! Vue에서는 이를 **Renderless Component**라고 부른다.
+
+렌더리스 컴포넌트의 예시로는 현재 마우스 커서의 위치를 추적하는 논리를 캡슐화한 것을 들 수 있다.
+
+```vue
+<!-- MouseTracker.vue -->
+<template>
+  <slot :x="x" :y="y"/>
+</template>
+<script>
+export default {
+  data() {
+    return {
+      x: 0,
+      y: 0
+    }
+  },
+  methods: {
+    update(e) {
+      this.x = e.pageX
+      this.y = e.pageY
+    }
+  },
+  mounted() {
+    window.addEventListener('mousemove', this.update)
+  },
+  unmounted() {
+    window.removeEventListener('mousemove', this.update)
+  }
+}
+</script>
+```
+
+```vue
+<!-- Parent -->
+<MouseTracker v-slot="{x, y}">
+	Mouse is at: {{ x }}, {{ y }}
+</MouseTracker>
+```
+
+이 흥미로운 패턴, Renderless Components의 최대 장점은 추가적인 컴포넌트 중첩 없이 Composition API와 함께 이용하여 더 효율적인 컴포넌트를 만들 수 있단 것이다. [Composables](#Mixins-&-Composables)챕터를 확인하면서 위 마우스 추적기 로직을 어떻게 기능적으로 이용하는 지 확인할 것이다.
+
+어쨌거나, scoped slots은 여전히 논리와 visual output을 동시에 캡슐화해야 할 때 아주 유용하다. `<FancyList>`예제 처럼 말이다.
+
+
 
 ### Slot Props Usage
 
