@@ -15,10 +15,15 @@ Modal처럼 여러 화면에서 자주 사용하게 되는 컴포넌트를 Slot�
 1. [Default Slot](#Default-Slot)
 2. [중복 슬롯과 Default](#중복-슬롯과-Default)
 3. [기본값 설정](#기본값-설정)
-4. [Named Slot](#Named-Slot)
-5. [Dynamic Slot Names](#Dynamic-Slot-Names)
-6. [Slot Props](#Slot-Props)
-7. [에러 발생 케이스](#에러-발생-케이스)
+4. [Render Scope](#Render-Scope)
+5. [Named Slot](#Named-Slot)
+6. [Dynamic Slot Names](#Dynamic-Slot-Names)
+7. [Scoped Slots](#Scoped-SLots)
+   1. Named Scoped Slots
+   2. Renderless Components
+   3. Slot Props Usage
+
+8. [에러 발생 케이스](#에러-발생-케이스)
 
 ---
 
@@ -170,7 +175,23 @@ result
 </div>
 ```
 
+## Render Scope
 
+Slot 컨텐츠는 부모 컴포넌트의 데이터 범위에 접근할 수 있는데, 그 이유는 슬롯 컨텐츠가 부모 컴포넌트에서 정의되기 때문이다. 예시를 보자.
+
+```vue
+<template>
+	<span>{{ message }}</span>
+	<!-- import한 컴포넌트의 컨텐츠는 부모 컴포넌트에서 적용된다. -->
+	<Component>{{ message }}</Component>
+</template>
+```
+
+두 `{{ message }}` 보간법(interpolations)는 같은 내용을 렌더할 것이다.
+
+Slot 컨텐츠는 자식 컴포넌트(즉, 슬롯이 정의된 컴포넌트)에 접근하지 못한다. 이 규칙을 기억해두자.
+
+> 부모 템플릿에 있는 모든 것은 부모 스코프에 컴파일된다. 자식 템플릿에 있는 템플릿은 자식 스코프에 컴파일된다.
 
 ## Named Slot
 
@@ -274,7 +295,127 @@ result
 
 
 
-## Slot Props
+## Scoped Slots
+
+[Render Scope](#Render-Scope)에서 이야기했던 것처럼, Slot 컨텐츠는 자식 컴포넌트의 상태(state)에 접근하지 못한다. 
+
+하지만, Slot 컨텐츠가 부모 스코프와 자식 스코프 양쪽에서 데이터를 사용할 수 있는 유용한 방법들이 있다. 이를 위해, 렌더링을 할 때 자식 컴포넌트의 Slot에서 데이터를 전달하는 방법이 필요하다.
+
+사실은, 컴포넌트에 Props를 전달하는 것처럼, slot outlet(element, tag)에 속성을 전달하는 것으로 할 수 있다.
+
+```vue
+<!-- MyComponent template -->
+<div>
+  <!-- Scoped slot outlet -->
+  <slot :text="greetingMessage" :count="1"></slot>
+  <!---->
+</div>
+<script>
+ export default {
+   setup() {
+     const greetingMessage = 'hello'
+     return {
+       greetingMessage
+     }
+   }
+ }
+</script>
+```
+
+Slot Props를 전달 받는 것은 단일(single) default slot을 사용할 때와 named slot 사용할 때에 따라 조금 다르다. 먼저 자식 컴포넌트 tag에 직접 `v-slot`을 선언해서, 단순 default slot을 사용할 때 slot props를 전달 받는 방법을 먼저 보자.
+
+Vue 2.6 이전
+
+```vue
+<MyComponent slot-scope="slotProps">
+  <!-- Scoped slot content -->
+	{{ slotProps.text }} {{ slotProps.count }}
+  <!---->
+</MyComponent>
+```
+
+Vue 2.6 이전에는 slot-scope라는 속성을 정의하여 Slot props를 전달받을 수 있었다. 하지만 의미적으로 뜻하는 바가 정확하지 않으며 혼동을 줄 수 있는 속성명이라고 판단되어 v-slot, 즉 directive처럼 명칭을 변경한다.(하지만 공식문서 항목명은 여전히 Scoped Slots이다.)
+
+현재(Vue2.6~)
+
+```vue
+<MyComponent v-slot="slotProps">
+	&#123;&#123; slotProps.text &#125;&#125; {{ slotProps.count }}
+</MyComponent>
+```
+
+위에서 본 것처럼 자식 컴포넌트(MyComponent)에서 부모 컴포넌트로 props가 전달된다. 기존에 사용하던 일반적인 Props는 **부모 컴포넌트로부터 자식 컴포넌트**로 데이터가 전달되던 것에 반해, slot Props는 **자식 컴포넌트에서 부모 컴포넌트**로 데이터가 전달되는 마치 **emit**처럼 작동하고 있다. 이는 **v-slot**이라는 **속성명(Property Name)**을 통해 데이터를 전달받아 Slot Props(Scoped Slots)롬 명명되었다고 보면 된다. 하지만 설명한 것처럼 자식 컴포넌트(슬롯이 정의된 컴포넌트)로부터 부모 컴포넌트(슬롯을 불러온 컴포넌트)의 구조임에 주의하자.
+
+ 자식 컴포넌트에 의해 Slot에 전달된 Props는 `v-slot`directive의 값(value)로서 사용이 가능하다. 
+
+자식 컴포넌트에서 함수로써 scoped slot을 전달하는 것도 생각해볼 수 있는데, 자식 컴포넌트를 호출하면서, 인수(arguments)로서 props를 전달할 수 있다.
+
+```javascript
+MyComponent({
+  // passing the default slot, but as a function
+  default: (slotProps) => {
+    return `${slotProps.text} ${slotProps.count}`
+  }
+})
+
+function MyComponent(slots) {
+  const greetingMessage = 'hello'
+  return (
+    `<div>${
+    	// call the slot function with props!
+    	slots.default({ text: greetingMessage, count: 1 })
+    }</div>`
+  )
+}
+```
+
+이는 scoped slots이 컴파일되는 방식과 아주 유사하며, render function을 사용할 때 scoped slot(slot props)를 사용하는 방식이다.
+
+어떻게 `v-slot="slotProps"`가 slot 함수의 특징과 매칭되는 지도 알아보자. 함수 인자(function arguments)처럼,  v-slot`에서 구조 분해(destructuring)를 사용할 수 있다.
+
+```vue
+<MyComponent v-slot="{ text, count }">
+	{{ text }} {{ count }}
+</MyComponent>
+```
+
+### Named Scoped Slots
+
+Named scoped slots는 유사하게 작동한다 - slot props는 `v-slot`directive의 값(value)으로서 접근할 수 있다
+
+```vue
+<Component v-slot:slotName="slotProps"></Component>
+```
+
+단축표기(shorthand)를 사용할 때는, 이처럼 구성된다.
+
+```vue
+<MyComponent>
+	<template #header="headerProps">
+  	{{ headerProps }}
+  </template>
+	<template #default="defaultProps">
+  	{{ defaultProps }}
+  </template>
+	<template #footer="footerProps">
+  	{{ footerProps }}
+  </template>
+</MyComponent>
+```
+
+그리고, named slot에 props를 전달할 때는 이와 같다.
+
+```vue
+<slot name="header" message="hello" :something="variable"></slot>
+```
+
+
+
+### Renderless Components
+
+말그대로 마크업을 렌더링하지 않는 컴포넌트를 지칭하지만, 기능적인 의미에 가까우며 실제로는 `<slot>`을 통해 레이아웃(혹은 프레임)을 구성한 컴포넌트로, 다른 컴포넌트에 의해 사용되면서 렌더링하는 컴포넌트를 칭한다.(결국 렌더링이 완전히 일어나지 않는 컴포넌트가 아닌(Template이 없는!), 자기 스스로 렌더링하지 않는 컴포넌트에 가까운 뜻이라고 볼 수 있다. 물론, 정말로 template이나 render()자체가 없는 컴포넌트도 구현이 가능은 하겠지만, 이런 경우 [Composables](#Mixins-&-Composables)를 사용하는 것을 추천한다.)
+
+### Slot Props Usage
 
 `<slot></slot>`이 선언되어 있는 자식 컴포넌트의 데이터 값을 부모 컴포넌트에서 사용하고 싶은 경우가 있을 것이다. 그런 경우 사용하는 것이 **Slot Props(슬롯 속성)**이다.
 
@@ -332,13 +473,28 @@ result
 </div>
 ```
 
+혹은 객체 구조 분해 할당(Object Destructuring)을 사용해서 이와 같이 불러올 수도 있다.
+
+Parent.vue
+
+```vue
+<child>
+	<template v-slot:container="{ userData, fruitsData }">
+		{{ userData }}
+		{{ typeof(userData) }}
+  </template>
+</child>
+```
+
+
+
 `#slotName="slotPropsName"`을 할당해주면 자식 컴포넌트가 `v-bind`를 이용해 보낸 데이터 값을 참조할 수 있게 된다.
 
 `slotPropsName`은 자식 컴포넌트의 Slot에서 바인딩된 데이터들 값을 가지는 **Object**이다.
 
 
 
-## [에러 발생 케이스](#목차)
+## 에러 발생 케이스
 
 Parent.vue에서 같은 Slot을 두번 이상 호출하면 에러가 발생한다.
 
