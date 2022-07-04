@@ -26,7 +26,7 @@ export const NamedSlot = {
       slots
     } = context
     return () => {
-      return h('div', {}, [slots.default && slots.default()[0] ? slots.default() : h('div', {}, ['Default 값입니다.']), slots.foo && slots.foo()[0] ? slots.foo() : 'Foo Slot default'])
+      return h('div', {}, [slots.default && slots.default()[0] ? slots.default() : h('div', {}, ['Default 값입니다.']), slots['foo-slot'] && slots['foo-slot']()[0] ? slots['foo-slot']() : 'Foo Slot default'])
     }
   }
 }

@@ -7,7 +7,7 @@
   </with-slots>
   <br />
   <named-slot>
-    <template #foo>
+    <template #foo-slot>
       반갑습니다. Foo slot입니다.
     </template>
     <div>Named Slot 내부입니다.</div>

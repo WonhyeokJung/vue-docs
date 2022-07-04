@@ -859,7 +859,7 @@ function render() {
 function render() {
   return h(
     'div',
-    Array.from({ length: 20}).map(() => {
+    Array.from({ length: 20 }).map(() => {
       return h('p', 'hi')
     })
   )
@@ -2536,9 +2536,42 @@ https://docs.w3cub.com/
 
 https://stackoverflow.com/questions/62023604/where-to-find-or-how-to-set-htmlwebpackplugin-options-title-in-project-created-w
 
+## VUE 모드 설정
+
+https://velog.io/@skyepodium/vue-%EC%8B%A4%ED%96%89-%EB%AA%A8%EB%93%9C%EC%99%80-%ED%99%98%EA%B2%BD-%EB%B3%80%EC%88%98-%EC%84%A4%EC%A0%95
+
 ## 정리할 것
 
 eslint 설정 / Slots 마무리 / reactivity(reactive 및 ref) /  export default와 export const-function간 import 방식 차이
+
+https://vuejs-templates.github.io/webpack/
+
+### WaTCH, WATCHEFFECT, COmputed
+
+```js
+// The callback is called whenever `refA` changes.
+watch(refA, () => {
+  console.log(refA.value);
+  console.log(refB.value);
+});
+
+// watch 주의사항
+// all A watch source can only be a getter/effect function, a ref, a reactive object, or an array of these types. 
+
+// The callback is called immediately, and
+// whenever `refA` or `refB` changes ...
+watchEffect(() => {
+  console.log(refA.value);
+  console.log(refB.value);
+});
+
+// ... this is the same behavior as for `computed()`.
+const aPlusB = computed(() => {
+  console.log(refA.value);
+  console.log(refB.value);
+  return refA.value + refB.value;
+});
+```
 
 ---
 
