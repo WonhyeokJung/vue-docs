@@ -576,3 +576,10 @@ export function updateArticle(data) {
    상태 관리 파일들을 저장한다. 보통 Vuex, Pinia 사용시 자동 생성된다.
 7. Utils
    JS 논리(Logic), Composables, Directives, Mixins, Traslations 등을 여기서 관리하거나, 따로 분리해서 디렉토리 적용을 할 수 있다. Components가 화면에 필요한 재사용 기능들을 추가했다면, utils는 JS 등 재사용하는 기능들을 정의하는 곳이다.
+
+
+
+## Vue-router
+
+- router path의 name: 정의
+  - camelCase를 사용한다.
