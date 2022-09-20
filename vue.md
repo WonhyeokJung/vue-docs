@@ -2496,6 +2496,55 @@ reactive
 
 
 
+## 기타
+
+### Reactive 객체의 String의 Double quotes가 생성되는 경우
+
+ref 객체는 흔히 `variableName.value`의 형태로 불러오지만, reactive 객체의 경우에는 setup 내에선 `.value`의 사용없이 불러올 수 있어 `.value`없이 입력하는 경우가 잦다. 하지만 이는 html 출력에서 한가지 문제점을 야기한다.
+
+아래와 같이 작성된 vue 파일이 있다고 가정하자.
+
+```vue
+<template>
+	<div>
+    <p>{{ errors.email }}</p>
+  </div>
+</template>
+<script setup>
+  import { reactive, watchEffect } from 'vue'
+	const errors = reactive({
+    email: ''
+  });
+  watchEffect(() => {
+    errors.email = true ? 'email입니다.' : 'email 양식이 아닙니다.';
+  });
+</script>
+```
+
+우리가 원하는 출력결과는 아래와 같을 것이다.
+
+```markdown
+email입니다.
+```
+
+하지만 화면 상에는 아래처럼 출력된다.
+
+```markdown
+"email입니다."
+```
+
+이를 수정하기 원하는 방식으로 적용하기 위해서는 `.value`를 작성해주어야 한다.
+
+```vue
+<template>
+	<div>
+    <p>{{ errors.email.value }}</p>
+  </div>
+</template>
+```
+
+
+
 ## 참고
 
 https://velog.io/@soulee__/Vue.js-%EA%B3%B5%EC%8B%9D%EB%AC%B8%EC%84%9C-%EB%9C%AF%EC%96%B4%EB%B3%B4%EA%B8%B0-Refs
