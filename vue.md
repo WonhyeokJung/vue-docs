@@ -2543,6 +2543,30 @@ email입니다.
 </template>
 ```
 
+### ref 변수의 template 내 호출
+
+위의 예제와는 달리 `ref()`변수는 template 내에서 호출 시에 .value를 붙이면 안되는데, `.value`를 사용하는 경우 반응성을 상실하기 때문이다.
+
+```vue
+<template>
+	<!-- foo.value로 입력할 경우, reactivity를 상실해서 정상작동하지 않는다. -->
+	<div :class="{ valid : foo.value }"></div>
+	<div :class="{valid : foo }"</div>
+	<button @click="bar"></button>
+</template>
+<script setup>
+	const foo = ref(false);
+  const bar = function () {
+    foo.value = true;
+  }
+</script>
+<style>
+  .valid {
+    background: pink,
+  }
+</style>
+```
+
 
 
 ## 참고
